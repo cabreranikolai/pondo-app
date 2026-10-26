@@ -1,6 +1,8 @@
 import { CircleHelp } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { primaryNavigation, secondaryNavigation } from '../../constants/navigation.js'
+import { useAuth } from '../../contexts/authContext.js'
+import SignOutButton from '../auth/SignOutButton.jsx'
 import BrandMark from '../ui/BrandMark.jsx'
 
 function NavigationLink({ item }) {
@@ -24,6 +26,11 @@ function NavigationLink({ item }) {
 }
 
 export default function Sidebar() {
+  const { profile, user } = useAuth()
+  const visibleSecondaryNavigation = secondaryNavigation.filter(
+    (item) => !item.role || item.role === profile?.role,
+  )
+
   return (
     <aside className="fixed inset-y-0 left-0 z-20 hidden w-[248px] flex-col border-r border-line bg-white px-5 pb-5 pt-7 lg:flex">
       <NavLink to="/" className="mb-10 flex items-center gap-3 px-2">
@@ -49,10 +56,19 @@ export default function Sidebar() {
 
       <div className="mt-auto">
         <nav aria-label="Account navigation" className="mb-5">
-          {secondaryNavigation.map((item) => (
+          {visibleSecondaryNavigation.map((item) => (
             <NavigationLink key={item.to} item={item} />
           ))}
         </nav>
+        <div className="mb-4 border-t border-line pt-4">
+          <p className="truncate px-3 text-sm font-medium text-ink">
+            {profile?.display_name || user?.email}
+          </p>
+          <p className="px-3 pt-1 text-xs text-muted">
+            {profile?.role === 'SUPERADMIN' ? 'Superadmin' : 'End user'}
+          </p>
+          <SignOutButton className="mt-2" />
+        </div>
         <div className="rounded-xl border border-line bg-canvas p-4">
           <CircleHelp aria-hidden="true" className="mb-3 text-brand" size={19} />
           <p className="text-sm font-medium text-ink">A clearer money picture</p>

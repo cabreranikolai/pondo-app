@@ -14,7 +14,8 @@ The brand uses a restrained forest-green and warm-ivory palette with a simple wa
 - Recharts
 - npm
 
-Supabase is reserved for a future phase and is not installed or configured.
+Supabase Auth and client-side session management are implemented. The initial
+database schema and security policies are under `supabase/`.
 
 ## Prerequisites
 
@@ -60,19 +61,32 @@ src/
   constants/                Navigation and illustrative mock data
   hooks/                    Reserved for shared React hooks
   layouts/                  Main application shell
-  lib/                      Formatting helpers
+  lib/                      Formatting helpers and Supabase client
+  contexts/                 Auth session and profile context
+  components/auth/          Authentication layout, fields, and route guards
   pages/                    Dashboard and planned app routes
   App.jsx                   Route definitions
   index.css                 Tailwind CSS v4 and global styles
   main.jsx                  Application entry point
+supabase/
+  migrations/               Versioned PostgreSQL schema and security migrations
+  functions/                Server-side invitation email function
 ```
 
 Pondo’s color palette is centralized in CSS custom properties in `src/index.css`. The current wallet-and-coin wordmark is rendered with Lucide React icons and can be replaced with a dedicated brand asset later.
 
 ## Current scope
 
-The dashboard uses clearly labeled, fictional mock data. No backend connection, authentication, local financial record storage, or real transaction management is implemented. Mock monetary values are represented as integer centavos for display examples only; actual financial calculations and data handling will be designed with backend integration.
+The dashboard uses clearly labeled, fictional mock data. Supabase login,
+registration, password recovery, profile display-name updates, protected
+routes, and a role-aware user-management interface are implemented. The
+invitation Edge Function must be deployed and configured before invitations
+can send email. Account, transaction, and budget management remains out of
+scope. Mock monetary values are represented as integer centavos for display
+examples only.
 
 ## Next development phase
 
-The next phase can establish Supabase authentication, invitation-only registration, user profiles, and a secure data model for accounts, transactions, categories, and budgets. Authorization policies must ensure end users can access only their own financial records while keeping superadmin account and invitation management separate from private user finances.
+See [supabase/README.md](./supabase/README.md) for database migration
+verification, authentication settings, and invitation-function deployment
+instructions.
