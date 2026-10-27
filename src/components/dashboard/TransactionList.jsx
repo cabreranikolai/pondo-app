@@ -1,10 +1,9 @@
 import { ArrowRightLeft } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { recentTransactions } from '../../constants/mockData.js'
 import EmptyState from '../ui/EmptyState.jsx'
 import TransactionRow from './TransactionRow.jsx'
 
-export default function TransactionList() {
+export default function TransactionList({ transactions = [], loading = false }) {
   return (
     <section aria-labelledby="recent-transactions-title" className="rounded-xl border border-line bg-white p-5 sm:p-6">
       <div className="mb-5 flex items-center justify-between gap-3">
@@ -21,10 +20,12 @@ export default function TransactionList() {
           View all <span aria-hidden="true">→</span>
         </Link>
       </div>
-      {recentTransactions.length > 0 ? (
+      {loading ? (
+        <div className="grid min-h-40 place-items-center text-sm text-muted" role="status">Loading recent activity…</div>
+      ) : transactions.length > 0 ? (
         <ul className="divide-y divide-line">
-          {recentTransactions.map((transaction) => (
-            <TransactionRow key={transaction.id} transaction={transaction} />
+          {transactions.map((transaction) => (
+            <TransactionRow key={transaction.transaction_id} transaction={transaction} />
           ))}
         </ul>
       ) : (

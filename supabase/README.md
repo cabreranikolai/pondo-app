@@ -352,9 +352,9 @@ Expect `opening_balance` to be numeric precision 14 / scale 2,
 `is_archived` to be boolean, RLS enabled, and authenticated delete privilege
 false.
 
-The Accounts page intentionally shows the sum of active opening balances as a
-temporary current balance until transaction functionality is implemented.
-Archived accounts are excluded from totals and can be restored explicitly.
+The Accounts page shows database-calculated current balances from opening
+balances and posted transactions. Archived accounts are excluded from active
+totals and can be restored explicitly.
 Use two signed-in test accounts to verify that one account cannot select,
 edit, archive, restore, or delete the other user's rows. Also try an
 unauthenticated API request; no account rows should be readable or writable.
@@ -450,3 +450,68 @@ financial data:
 These live database and two-user checks must be performed in the intended
 Supabase project. A successful local lint/build does not verify database
 policies, grants, RPC behavior, or account isolation.
+
+## Step 7: Budgets and financial reports
+
+The Step 7 migration is
+[`migrations/20261027080000_budget_reports_support.sql`](./migrations/20261027080000_budget_reports_support.sql).
+Apply it after the initial schema migration and the Step 6 transaction
+migration. It is additive: it permits `category_id = NULL` for an overall
+monthly budget, adds a partial unique index so each user can have only one
+overall budget per month, and updates the category validation trigger to
+accept that overall-budget case. Existing category-budget uniqueness,
+budget ownership RLS policies, and foreign keys remain in place.
+
+The migration also adds `public.get_financial_report`, a stable
+`SECURITY INVOKER` function that aggregates only the authenticated user's
+`INCOME` and `EXPENSE` transactions into local-calendar month/category rows.
+It returns exact numeric sums as text. Transfers are excluded. The function
+is granted only to `authenticated`, and underlying transaction/category RLS
+continues to apply. Dashboard, budgets, and reports use this function rather
+than downloading unbounded transaction rows or calculating authoritative
+financial totals in the browser.
+
+The UI interprets the selected month in the device's IANA timezone and sends
+its local month boundaries to the report function. Overall budget spending
+counts all expenses once; category budgets use only their own category.
+The dashboard/report utilization uses the explicit overall budget when one
+exists, otherwise it reports utilization of the individually budgeted
+categories only. It does not sum those categories together with an overall
+budget. When displayed together on the Budgets page, the overall and
+category cards are separate measures, not additive totals.
+
+Apply the Step 7 migration once, after confirming the prior migration history.
+For SQL Editor verification, check the overall uniqueness index, budget RLS,
+and report RPC permissions:
+
+```sql
+select indexname, indexdef
+from pg_indexes
+where schemaname = 'public'
+  and tablename = 'budgets'
+  and indexname = 'budgets_user_month_overall_key';
+
+select relrowsecurity
+from pg_class
+where oid = 'public.budgets'::regclass;
+
+select has_function_privilege(
+  'authenticated',
+  'public.get_financial_report(timestamptz,timestamptz,text)',
+  'EXECUTE'
+) as authenticated_can_read_own_report,
+has_function_privilege(
+  'anon',
+  'public.get_financial_report(timestamptz,timestamptz,text)',
+  'EXECUTE'
+) as anon_can_read_report;
+```
+
+Expect the partial index to be present, RLS enabled, authenticated execution
+true, and anon execution false. With two test accounts, create separate fake
+income, expenses, category budgets, and overall budgets. Verify that each
+user's report and budget queries contain only their rows, that transfers do
+not affect report totals, that local month boundaries classify transactions
+as expected, and that duplicate overall/category budgets for a user and month
+are rejected. These live database and isolation tests have not been performed
+by the frontend build.

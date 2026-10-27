@@ -1,6 +1,6 @@
 # Pondo — Your Money, in Balance.
 
-Pondo is a mobile-first personal finance and budgeting app designed for iPhone users in the Philippines. It helps people track account balances, income, expenses, monthly budgets, and financial activity. This first project phase establishes the frontend structure and a responsive dashboard with fictional Philippine peso examples.
+Pondo is a mobile-first personal finance and budgeting app designed for iPhone users in the Philippines. It helps people track account balances, income, expenses, monthly budgets, and financial activity.
 
 The brand uses a restrained forest-green and warm-ivory palette with a simple wallet-and-coin mark. Pondo means money in Filipino; the tagline is “Your Money, in Balance.”
 
@@ -58,7 +58,7 @@ src/
     dashboard/              Summary, chart, budget, and transaction UI
     layout/                 Responsive sidebar and mobile navigation
     ui/                     Shared branding, page, and empty-state components
-  constants/                Navigation and illustrative mock data
+  constants/                Navigation and legacy preview data
   hooks/                    Reserved for shared React hooks
   layouts/                  Main application shell
   lib/                      Formatting helpers and Supabase client
@@ -77,16 +77,16 @@ Pondo’s color palette is centralized in CSS custom properties in `src/index.cs
 
 ## Current scope
 
-The dashboard uses clearly labeled, fictional mock data. Supabase login,
-registration, password recovery, profile display-name updates, protected
-routes, and a role-aware user-management interface are implemented. The
-invitation Edge Function must be deployed and configured before invitations
-can send email. Account, transaction, and budget management remains out of
-scope. Mock monetary values are represented as integer centavos for display
-examples only.
+Supabase login, registration, password recovery, profile display-name updates,
+protected routes, account management, transaction history, budgets, and
+financial reports are implemented. The invitation Edge Function must be
+deployed and configured before invitations can send email. Dashboard and
+report figures are loaded from the signed-in user's Supabase records; the
+legacy illustrative data module is not used for those figures.
 
 ## Next development phase
 
-See [supabase/README.md](./supabase/README.md) for database migration
+See [supabase/README.md](./supabase/README.md) for migration order and
 verification, authentication settings, and invitation-function deployment
-instructions.
+instructions. Database-backed pages require the documented migrations to be
+applied to the intended Supabase project.

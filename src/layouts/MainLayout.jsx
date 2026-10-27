@@ -4,7 +4,6 @@ import Sidebar from '../components/layout/Sidebar.jsx'
 import BrandMark from '../components/ui/BrandMark.jsx'
 import SignOutButton from '../components/auth/SignOutButton.jsx'
 import { useAuth } from '../contexts/authContext.js'
-import { illustrativeNotice } from '../constants/mockData.js'
 
 export default function MainLayout() {
   const { profile, user } = useAuth()
@@ -44,9 +43,6 @@ export default function MainLayout() {
 
         <main className="mx-auto w-full max-w-[1440px] px-4 pb-28 pt-6 sm:px-7 sm:pt-8 lg:px-10 lg:pb-10 lg:pt-10">
           <Outlet />
-          <p className="mt-8 text-center text-[11px] leading-5 text-muted lg:text-left">
-            {illustrativeNotice}
-          </p>
         </main>
       </div>
       <MobileNavigation />
