@@ -239,7 +239,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      <section aria-label={`Financial summary for ${monthLabel(month)}`} className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3 2xl:grid-cols-5 lg:gap-4">
+      <section data-tour="dashboard-overview" aria-label={`Financial summary for ${monthLabel(month)}`} className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3 2xl:grid-cols-5 lg:gap-4">
         {summaryCards.map((card) => (
           <div key={card.label} className={loading ? 'animate-pulse opacity-60' : ''}>
             <SummaryCard {...card} />

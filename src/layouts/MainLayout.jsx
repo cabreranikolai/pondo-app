@@ -3,6 +3,7 @@ import MobileNavigation from '../components/layout/MobileNavigation.jsx'
 import Sidebar from '../components/layout/Sidebar.jsx'
 import BrandMark from '../components/ui/BrandMark.jsx'
 import SignOutButton from '../components/auth/SignOutButton.jsx'
+import OnboardingGuide from '../components/onboarding/OnboardingGuide.jsx'
 import { useAuth } from '../contexts/authContext.js'
 
 export default function MainLayout() {
@@ -46,6 +47,7 @@ export default function MainLayout() {
         </main>
       </div>
       <MobileNavigation />
+      {user?.id && <OnboardingGuide userId={user.id} />}
     </div>
   )
 }

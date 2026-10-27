@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Settings2 } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import AuthFeedback from '../components/auth/AuthFeedback.jsx'
 import AuthField from '../components/auth/AuthField.jsx'
-import EmptyState from '../components/ui/EmptyState.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { useAuth } from '../contexts/authContext.js'
 import { supabase } from '../lib/supabase.js'
 
 export default function Settings() {
   const { profile, profileStatus, refreshProfile, user } = useAuth()
+  const navigate = useNavigate()
   const [displayName, setDisplayName] = useState(profile?.display_name || '')
   const [profileBusy, setProfileBusy] = useState(false)
   const [profileError, setProfileError] = useState('')
@@ -189,11 +188,37 @@ export default function Settings() {
           </div>
         </div>
       </section>
-      <EmptyState
-        icon={Settings2}
-        title="Settings are not available yet"
-        description="Profile and preference controls will be introduced in a future phase."
-      />
+      <section
+        data-tour="settings-help"
+        aria-labelledby="onboarding-help-title"
+        className="rounded-xl border border-line bg-white p-5 sm:p-6"
+      >
+        <div className="max-w-2xl">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">Help</p>
+          <h2 id="onboarding-help-title" className="mt-1 text-base font-semibold text-ink">
+            Need a refresher?
+          </h2>
+          <p className="mt-1 text-sm leading-6 text-muted">
+            Replay the guided tour or return to your setup checklist. Your progress is saved securely to your account.
+          </p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => navigate('/?onboarding=tour')}
+              className="min-h-10 rounded-lg bg-brand px-4 text-sm font-semibold text-white hover:bg-brand-dark"
+            >
+              Replay guided tour
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/?onboarding=checklist')}
+              className="min-h-10 rounded-lg border border-line px-4 text-sm font-semibold text-muted hover:bg-canvas"
+            >
+              Show setup checklist
+            </button>
+          </div>
+        </div>
+      </section>
     </>
   )
 }

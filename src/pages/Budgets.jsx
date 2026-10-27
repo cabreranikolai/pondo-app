@@ -426,7 +426,7 @@ export default function Budgets() {
         <p className="mb-5 rounded-lg bg-brand-soft px-3 py-2.5 text-sm text-brand-dark" role="status">{success}</p>
       )}
 
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white p-3 sm:p-4">
+      <div data-tour="budget-month" className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-white p-3 sm:p-4">
         <button
           type="button"
           onClick={() => setMonth((current) => shiftMonth(current, -1))}

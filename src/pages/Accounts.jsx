@@ -419,7 +419,7 @@ export default function Accounts() {
         </p>
       )}
 
-      <section className="mb-6 rounded-xl border border-line bg-white p-5 sm:p-6">
+      <section data-tour="accounts-overview" className="mb-6 rounded-xl border border-line bg-white p-5 sm:p-6">
         <p className="text-sm font-medium text-muted">Total balance</p>
         <p className="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
           {formatCents(activeTotalCents)}

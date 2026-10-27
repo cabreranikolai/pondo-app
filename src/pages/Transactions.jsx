@@ -705,6 +705,7 @@ export default function Transactions() {
         action={
           <button
             type="button"
+            data-tour="transaction-create"
             onClick={() => {
               setFormError('')
               setEditingTransaction(false)
@@ -746,7 +747,7 @@ export default function Transactions() {
         </div>
       )}
 
-      <section aria-label="Filter transactions" className="mb-5 rounded-xl border border-line bg-white p-4 sm:p-5">
+      <section data-tour="transaction-history" aria-label="Transaction history filters" className="mb-5 rounded-xl border border-line bg-white p-4 sm:p-5">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold text-ink">
           <Search aria-hidden="true" size={16} className="text-brand" />
           Find a transaction

@@ -515,3 +515,46 @@ not affect report totals, that local month boundaries classify transactions
 as expected, and that duplicate overall/category budgets for a user and month
 are rejected. These live database and isolation tests have not been performed
 by the frontend build.
+
+## First-login onboarding
+
+Apply
+[`migrations/20261027090000_onboarding_progress.sql`](./migrations/20261027090000_onboarding_progress.sql)
+after the initial schema migration. It adds a separate
+`public.onboarding_progress` table instead of extending `profiles`, since
+profile read policies allow superadmins to read other profiles. The new table
+has RLS enabled and grants authenticated users access only to their own row.
+The browser can insert its own initial row and update tutorial status, current
+step, and checklist dismissal; it cannot change the user ID or version. No
+financial records are created by onboarding.
+
+The UI shows the welcome screen only after session and profile loading have
+completed. Tutorial progress is stored per user and resumes at its last saved
+step. Completion and skipping are persisted, while the optional setup
+checklist checks actual account, transaction, and budget rows under the user's
+RLS policies. Settings has controls to replay the tour or show the checklist.
+Apply the migration once, after checking the project's migration history.
+
+Verify ownership in SQL Editor:
+
+```sql
+select relrowsecurity
+from pg_class
+where oid = 'public.onboarding_progress'::regclass;
+
+select policyname, cmd, qual, with_check
+from pg_policies
+where schemaname = 'public'
+  and tablename = 'onboarding_progress'
+order by policyname;
+
+select has_table_privilege(
+  'authenticated', 'public.onboarding_progress', 'SELECT'
+) as authenticated_can_select_onboarding;
+```
+
+RLS should be enabled. As two different authenticated test users, create/read
+their own progress and verify selecting or updating the other user's UUID
+returns no rows. The migration and frontend build alone do not prove live
+cross-user isolation or multi-device persistence; verify those against the
+intended Supabase project.
