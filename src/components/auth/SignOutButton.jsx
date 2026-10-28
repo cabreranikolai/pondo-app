@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { LogOut, X } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/authContext.js'
@@ -9,12 +10,19 @@ export default function SignOutButton({ className = '', menuItem = false }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [confirming, setConfirming] = useState(false)
+  const triggerRef = useRef(null)
   const cancelRef = useRef(null)
   const dialogRef = useRef(null)
 
   useEffect(() => {
     if (confirming) cancelRef.current?.focus()
   }, [confirming])
+
+  function closeConfirmation() {
+    if (busy) return
+    setConfirming(false)
+    window.requestAnimationFrame(() => triggerRef.current?.focus())
+  }
 
   async function handleSignOut() {
     if (busy) return
@@ -34,6 +42,7 @@ export default function SignOutButton({ className = '', menuItem = false }) {
     <>
       <div className={className}>
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => {
             setError('')
@@ -52,14 +61,18 @@ export default function SignOutButton({ className = '', menuItem = false }) {
         {error && <p className="mt-1 text-xs text-danger" role="alert">{error}</p>}
       </div>
 
-      {confirming && (
+      {confirming && createPortal(
         <div
-          className="fixed inset-0 z-[100] flex items-end justify-center bg-ink/50 p-0 sm:items-center sm:p-4"
+          data-sign-out-dialog
+          className="fixed inset-0 z-[100] flex items-end justify-center bg-ink/50 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:items-center"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget && !busy) setConfirming(false)
+            if (event.target === event.currentTarget) closeConfirmation()
           }}
           onKeyDown={(event) => {
-            if (event.key === 'Escape' && !busy) setConfirming(false)
+            if (event.key === 'Escape') {
+              event.stopPropagation()
+              closeConfirmation()
+            }
           }}
         >
           <section
@@ -97,7 +110,7 @@ export default function SignOutButton({ className = '', menuItem = false }) {
               </div>
               <button
                 type="button"
-                onClick={() => setConfirming(false)}
+                onClick={closeConfirmation}
                 disabled={busy}
                 aria-label="Close sign out confirmation"
                 className="grid size-9 shrink-0 place-items-center rounded-lg text-muted hover:bg-canvas disabled:opacity-50"
@@ -110,7 +123,7 @@ export default function SignOutButton({ className = '', menuItem = false }) {
               <button
                 ref={cancelRef}
                 type="button"
-                onClick={() => setConfirming(false)}
+                onClick={closeConfirmation}
                 disabled={busy}
                 className="min-h-11 rounded-lg border border-line px-4 text-sm font-semibold text-muted hover:bg-canvas disabled:opacity-50"
               >
@@ -126,7 +139,8 @@ export default function SignOutButton({ className = '', menuItem = false }) {
               </button>
             </div>
           </section>
-        </div>
+        </div>,
+        document.body,
       )}
     </>
   )

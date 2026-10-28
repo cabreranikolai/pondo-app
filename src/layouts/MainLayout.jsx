@@ -22,6 +22,7 @@ export default function MainLayout() {
     if (!accountMenuOpen) return undefined
 
     function closeOnOutsideClick(event) {
+      if (event.target instanceof Element && event.target.closest('[data-sign-out-dialog]')) return
       if (!accountMenuRef.current?.contains(event.target)) setAccountMenuOpen(false)
     }
 
