@@ -36,6 +36,12 @@ Start the development server:
 npm run dev
 ```
 
+Bank logos are optionally loaded through Logo.dev. Add a public, browser-safe,
+domain-restricted Logo.dev key to `.env` as `VITE_LOGO_DEV_KEY` to enable them.
+Vite variables are included in the browser bundle, so never use a secret or
+server-side key here. Without a configured key, Pondo displays its neutral bank
+icon instead.
+
 Create a production build:
 
 ```sh

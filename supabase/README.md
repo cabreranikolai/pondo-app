@@ -558,3 +558,25 @@ their own progress and verify selecting or updating the other user's UUID
 returns no rows. The migration and frontend build alone do not prove live
 cross-user isolation or multi-device persistence; verify those against the
 intended Supabase project.
+
+## Philippine bank account metadata
+
+The local account form suggests names from the BSP's
+[Directory of Banks and Non-Bank Financial Institutions](https://www.bsp.gov.ph/SitePages/FinancialStability/DirBanksFIList.aspx),
+specifically its Universal & Commercial Banks and Digital Banks listings.
+This list was reviewed against the BSP directory on 26 October 2026. It is a
+bundled suggestion list, not a live API, and users can enter a bank that is not
+listed. When `VITE_LOGO_DEV_KEY` contains a public, browser-safe Logo.dev key,
+the app loads logos by the configured bank domains. Vite exposes this variable
+in the browser bundle, so never use a secret or server-side key. Without a key
+or when a logo cannot be loaded, the app displays a neutral bank icon. Review
+the domain mappings in `src/lib/bankDomains.js` before enabling the service.
+
+Apply
+[`migrations/20261027100000_philippine_bank_metadata.sql`](./migrations/20261027100000_philippine_bank_metadata.sql)
+after the account archive and transaction-history migrations. It adds nullable
+`accounts.bank_name`, grants authenticated users insert/update access to that
+column only, and appends the value to the security-invoker `account_balances`
+view. Existing ownership RLS policies and all other column grants remain
+unchanged. Check migration history before applying it, and do not rerun it
+blindly.

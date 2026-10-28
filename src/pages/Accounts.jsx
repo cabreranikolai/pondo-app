@@ -4,17 +4,22 @@ import {
   ArchiveRestore,
   Banknote,
   Building2,
+  Check,
+  ChevronDown,
   CircleAlert,
   Pencil,
   Plus,
+  Search,
   Smartphone,
   WalletCards,
   X,
 } from 'lucide-react'
 import { useAuth } from '../contexts/authContext.js'
 import EmptyState from '../components/ui/EmptyState.jsx'
+import BankLogo from '../components/ui/BankLogo.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { centsToDecimal, formatCents, toCents } from '../lib/money.js'
+import { PHILIPPINE_BANKS } from '../lib/philippineBanks.js'
 import { supabase } from '../lib/supabase.js'
 
 const ACCOUNT_TYPES = [
@@ -34,6 +39,7 @@ const TYPE_ICONS = {
 const EMPTY_FORM = {
   name: '',
   account_type: 'CASH',
+  bank_name: '',
   opening_balance: '0.00',
 }
 
@@ -48,6 +54,9 @@ function accountLoadError(error) {
   if (details.includes('is_archived')) {
     return 'The account archive database update is missing. Apply 20261026110000_accounts_archive_and_other_type.sql in Supabase, then retry.'
   }
+  if (details.includes('bank_name')) {
+    return 'The bank details database update is missing. Apply 20261027100000_philippine_bank_metadata.sql in Supabase, then retry.'
+  }
   if (details.includes('account_balances') || details.includes('current_balance')) {
     return 'The account balance view is missing. Apply 20261026110000_accounts_archive_and_other_type.sql, then 20261026130000_transaction_history_and_atomic_writes.sql in Supabase, then retry.'
   }
@@ -58,12 +67,161 @@ function accountTypeLabel(type) {
   return ACCOUNT_TYPES.find((item) => item.value === type)?.label || 'Other'
 }
 
+function BankNameCombobox({ value, onChange }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const matchingBanks = useMemo(() => {
+    const query = value.trim().toLocaleLowerCase()
+    if (!query) return PHILIPPINE_BANKS
+    return PHILIPPINE_BANKS.filter((bank) =>
+      bank.toLocaleLowerCase().includes(query),
+    )
+  }, [value])
+
+  function chooseBank(bank) {
+    onChange(bank)
+    setIsOpen(false)
+    setActiveIndex(0)
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setIsOpen(true)
+      setActiveIndex((index) =>
+        matchingBanks.length
+          ? index < 0
+            ? 0
+            : (index + 1) % matchingBanks.length
+          : -1,
+      )
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setIsOpen(true)
+      setActiveIndex((index) =>
+        matchingBanks.length
+          ? index < 0 || index === 0
+            ? matchingBanks.length - 1
+            : index - 1
+          : -1,
+      )
+    } else if (event.key === 'Enter' && isOpen && matchingBanks[activeIndex]) {
+      event.preventDefault()
+      chooseBank(matchingBanks[activeIndex])
+    } else if (event.key === 'Escape' && isOpen) {
+      event.preventDefault()
+      setIsOpen(false)
+    }
+  }
+
+  return (
+    <div
+      className="relative"
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setIsOpen(false)
+      }}
+    >
+      <div className="flex min-h-11 items-center rounded-lg border border-line bg-white focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/15">
+        <Search aria-hidden="true" size={17} className="ml-3 shrink-0 text-muted" />
+        <input
+          id="account-bank-name"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded={isOpen}
+          aria-controls="philippine-bank-options"
+          aria-activedescendant={
+            isOpen && matchingBanks[activeIndex]
+              ? `philippine-bank-option-${activeIndex}`
+              : undefined
+          }
+          autoComplete="off"
+          maxLength={120}
+          value={value}
+          onFocus={() => setIsOpen(true)}
+          onChange={(event) => {
+            onChange(event.target.value)
+            setActiveIndex(-1)
+            setIsOpen(true)
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder="Search or enter a bank name"
+          className="min-w-0 flex-1 bg-transparent px-2 text-sm text-ink outline-none placeholder:text-muted"
+        />
+        <button
+          type="button"
+          aria-label={isOpen ? 'Close bank suggestions' : 'Show bank suggestions'}
+          aria-expanded={isOpen}
+          onClick={() => {
+            setIsOpen((open) => !open)
+            setActiveIndex(-1)
+          }}
+          className="grid size-10 shrink-0 place-items-center rounded-r-lg text-muted hover:bg-canvas"
+        >
+          <ChevronDown
+            aria-hidden="true"
+            size={17}
+            className={`transition-transform duration-150 ${isOpen ? 'rotate-180' : ''}`}
+          />
+        </button>
+      </div>
+
+      {isOpen && (
+        <div className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
+          <p className="border-b border-line px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
+            Banks in the BSP directory
+          </p>
+          <ul
+            id="philippine-bank-options"
+            role="listbox"
+            aria-label="Philippine bank suggestions"
+            className="max-h-52 overflow-y-auto overscroll-contain p-1"
+          >
+            {matchingBanks.length ? (
+              matchingBanks.map((bank, index) => (
+                <li key={bank} role="presentation">
+                  <div
+                    id={`philippine-bank-option-${index}`}
+                    role="option"
+                    aria-selected={value === bank}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onClick={() => chooseBank(bank)}
+                    className={`flex min-h-10 w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 text-left text-sm transition-colors ${
+                      activeIndex === index
+                        ? 'bg-brand-soft text-brand'
+                        : 'text-ink hover:bg-canvas'
+                    }`}
+                  >
+                    <BankLogo bankName={bank} className="size-8" />
+                    <span className="min-w-0 flex-1">{bank}</span>
+                    {value === bank && (
+                      <Check aria-hidden="true" size={16} className="shrink-0 text-brand" />
+                    )}
+                  </div>
+                </li>
+              ))
+            ) : (
+              <li className="px-3 py-3 text-sm text-muted">
+                No matching bank. Your entry will be saved as typed.
+              </li>
+            )}
+          </ul>
+          <p className="border-t border-line px-3 py-2 text-xs text-muted">
+            You can also enter a bank not listed here.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function AccountForm({ account, busy, error, onCancel, onSubmit }) {
   const [form, setForm] = useState(
     account
       ? {
           name: account.name,
           account_type: account.account_type,
+          bank_name: account.bank_name || '',
           opening_balance: String(account.opening_balance ?? '0.00'),
         }
       : EMPTY_FORM,
@@ -71,7 +229,11 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
   const [validationError, setValidationError] = useState('')
 
   function updateField(field, value) {
-    setForm((current) => ({ ...current, [field]: value }))
+    setForm((current) => ({
+      ...current,
+      [field]: value,
+      ...(field === 'account_type' && value !== 'BANK' ? { bank_name: '' } : {}),
+    }))
     setValidationError('')
   }
 
@@ -87,6 +249,12 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
       return
     }
 
+    const bankName = form.bank_name.trim()
+    if (form.account_type === 'BANK' && bankName.length > 120) {
+      setValidationError('Bank name must be 120 characters or fewer.')
+      return
+    }
+
     const openingBalanceCents = toCents(form.opening_balance)
     if (openingBalanceCents === null) {
       setValidationError(
@@ -98,6 +266,7 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
     onSubmit({
       name,
       account_type: form.account_type,
+      bank_name: form.account_type === 'BANK' ? bankName || null : null,
       opening_balance: centsToDecimal(openingBalanceCents),
     })
   }
@@ -176,6 +345,25 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
             </select>
           </div>
 
+          {form.account_type === 'BANK' && (
+            <div>
+              <label
+                htmlFor="account-bank-name"
+                className="mb-1.5 block text-sm font-medium text-ink"
+              >
+                Bank name <span className="font-normal text-muted">(optional)</span>
+              </label>
+              <BankNameCombobox
+                value={form.bank_name}
+                onChange={(value) => updateField('bank_name', value)}
+              />
+              <p className="mt-1.5 text-xs leading-5 text-muted">
+                Suggestions include BSP-listed universal, commercial, and digital banks. You can
+                also enter another bank.
+              </p>
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="account-opening-balance"
@@ -253,7 +441,7 @@ export default function Accounts() {
 
     const { data, error } = await supabase
       .from('account_balances')
-      .select('id, name, account_type, opening_balance, current_balance, currency, is_archived, created_at')
+      .select('id, name, account_type, opening_balance, current_balance, currency, is_archived, created_at, bank_name')
       .eq('user_id', userId)
       .order('created_at', { ascending: true })
 
@@ -512,7 +700,11 @@ export default function Accounts() {
                 <article className="h-full rounded-xl border border-line bg-white p-4 sm:p-5">
                   <div className="flex items-start gap-3">
                     <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
-                      <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
+                      {account.account_type === 'BANK' && account.bank_name ? (
+                        <BankLogo bankName={account.bank_name} className="size-11 rounded-xl" />
+                      ) : (
+                        <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
+                      )}
                     </span>
                     <div className="min-w-0 flex-1">
                       <h2 className="truncate text-sm font-semibold text-ink">{account.name}</h2>
@@ -520,6 +712,9 @@ export default function Accounts() {
                         {accountTypeLabel(account.account_type)}
                         {account.is_archived ? ' · Archived' : ''}
                       </p>
+                      {account.bank_name && (
+                        <p className="mt-1 truncate text-xs text-muted">{account.bank_name}</p>
+                      )}
                     </div>
                     <p className="shrink-0 text-right text-xs font-semibold text-ink">
                       {account.currency}
