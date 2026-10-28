@@ -19,10 +19,10 @@ export default function SummaryCard({
           <Icon aria-hidden="true" size={18} strokeWidth={1.8} />
         </span>
       </div>
-      <p className="mt-4 text-[1.35rem] font-semibold tracking-tight text-ink sm:text-2xl">
+      <p className="mt-4 break-words text-[clamp(1.05rem,5vw,1.5rem)] font-semibold tracking-tight text-ink sm:text-2xl">
         {amount}
       </p>
-      <p className="mt-1 text-xs text-muted">{detail}</p>
+      <p className="mt-1 break-words text-xs leading-5 text-muted">{detail}</p>
     </article>
   )
 }

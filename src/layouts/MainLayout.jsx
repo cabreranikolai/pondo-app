@@ -16,8 +16,8 @@ export default function MainLayout() {
   return (
     <div className="min-h-screen bg-canvas">
       <Sidebar />
-      <div className="min-h-screen lg:pl-[248px]">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-line bg-white/95 px-4 backdrop-blur sm:px-7 lg:hidden">
+      <div className="min-h-screen min-h-dvh lg:pl-[248px]">
+        <header className="sticky top-0 z-20 flex min-h-14 items-center justify-between border-b border-line bg-white/95 px-4 pt-[env(safe-area-inset-top)] backdrop-blur sm:px-7 lg:hidden">
           <div className="flex items-center gap-2.5">
             <BrandMark compact />
             <span>
@@ -42,7 +42,7 @@ export default function MainLayout() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[1440px] px-4 pb-28 pt-6 sm:px-7 sm:pt-8 lg:px-10 lg:pb-10 lg:pt-10">
+        <main className="mx-auto w-full max-w-[1440px] px-4 pb-[calc(7rem+env(safe-area-inset-bottom))] pt-5 sm:px-7 sm:pb-28 sm:pt-8 lg:px-10 lg:pb-10 lg:pt-10">
           <Outlet />
         </main>
       </div>

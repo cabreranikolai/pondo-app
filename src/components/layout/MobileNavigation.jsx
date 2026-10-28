@@ -5,7 +5,7 @@ export default function MobileNavigation() {
   return (
     <nav
       aria-label="Main navigation"
-      className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-2 pt-2 backdrop-blur lg:hidden"
+      className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-1 pt-2 backdrop-blur lg:hidden"
     >
       <ul className="mx-auto flex max-w-lg items-stretch justify-around">
         {primaryNavigation.map((item) => {
@@ -16,7 +16,7 @@ export default function MobileNavigation() {
                 to={item.to}
                 end={item.to === '/'}
                 className={({ isActive }) =>
-                  `flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg text-[10px] font-medium ${
+                  `flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg px-0.5 text-[10px] font-medium leading-tight ${
                     isActive ? 'text-brand-dark' : 'text-muted'
                   }`
                 }
