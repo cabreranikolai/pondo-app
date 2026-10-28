@@ -701,7 +701,6 @@ export default function Transactions() {
       <PageHeader
         eyebrow="Your activity"
         title="Transactions"
-        description="Track income, expenses, and transfers across your accounts."
         action={
           <button
             type="button"

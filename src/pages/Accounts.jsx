@@ -384,7 +384,6 @@ export default function Accounts() {
       <PageHeader
         eyebrow="Your money"
         title="Accounts"
-        description="See the accounts you use to keep track of your money."
         action={
           <button
             type="button"

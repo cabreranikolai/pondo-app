@@ -393,7 +393,6 @@ export default function Budgets() {
       <PageHeader
         eyebrow="Plan ahead"
         title="Budgets"
-        description="Set monthly spending limits and see how actual expenses compare."
         action={
           <button
             type="button"

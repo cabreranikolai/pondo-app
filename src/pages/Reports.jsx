@@ -130,7 +130,6 @@ export default function Reports() {
       <PageHeader
         eyebrow="Understand your money"
         title="Reports"
-        description="Review real income, expense, and category activity for your workspace."
         action={
           <label className="flex items-center gap-2 text-sm font-medium text-muted">
             <span>Month</span>
