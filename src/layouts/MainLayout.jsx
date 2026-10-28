@@ -1,4 +1,6 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link, Outlet } from 'react-router-dom'
+import { Settings2 } from 'lucide-react'
 import MobileNavigation from '../components/layout/MobileNavigation.jsx'
 import Sidebar from '../components/layout/Sidebar.jsx'
 import BrandMark from '../components/ui/BrandMark.jsx'
@@ -8,10 +10,32 @@ import { useAuth } from '../contexts/authContext.js'
 
 export default function MainLayout() {
   const { profile, user } = useAuth()
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const accountMenuRef = useRef(null)
   const initials = (profile?.display_name || user?.email || 'P')
     .trim()
     .slice(0, 1)
     .toUpperCase()
+  const accountLabel = profile?.display_name || user?.email || 'Account'
+
+  useEffect(() => {
+    if (!accountMenuOpen) return undefined
+
+    function closeOnOutsideClick(event) {
+      if (!accountMenuRef.current?.contains(event.target)) setAccountMenuOpen(false)
+    }
+
+    function closeOnEscape(event) {
+      if (event.key === 'Escape') setAccountMenuOpen(false)
+    }
+
+    document.addEventListener('pointerdown', closeOnOutsideClick)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => {
+      document.removeEventListener('pointerdown', closeOnOutsideClick)
+      document.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [accountMenuOpen])
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -29,16 +53,34 @@ export default function MainLayout() {
               </span>
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            <Link
-              to="/settings"
-              aria-label="Open settings"
-              title={profile?.display_name || user?.email || 'Settings'}
-              className="grid size-9 place-items-center rounded-full border border-line bg-canvas text-xs font-semibold text-brand-dark"
+          <div className="relative" ref={accountMenuRef}>
+            <button
+              type="button"
+              aria-label={`Account options for ${accountLabel}`}
+              aria-haspopup="menu"
+              aria-expanded={accountMenuOpen}
+              onClick={() => setAccountMenuOpen((open) => !open)}
+              className="grid size-10 place-items-center rounded-full border border-line bg-canvas text-xs font-semibold text-brand-dark transition hover:bg-brand-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               {initials}
-            </Link>
-            <SignOutButton />
+            </button>
+            {accountMenuOpen && (
+              <div
+                aria-label="Account options"
+                className="absolute right-0 top-full z-40 mt-2 w-52 rounded-xl border border-line bg-white p-2 shadow-lg"
+              >
+                <Link
+                  to="/settings"
+                  onClick={() => setAccountMenuOpen(false)}
+                  className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-medium text-ink transition-colors hover:bg-canvas"
+                >
+                  <Settings2 aria-hidden="true" size={17} className="text-muted" />
+                  Settings
+                </Link>
+                <div className="my-1 border-t border-line" />
+                <SignOutButton menuItem />
+              </div>
+            )}
           </div>
         </header>
 

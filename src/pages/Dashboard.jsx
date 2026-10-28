@@ -2,6 +2,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowDownToLine,
   ArrowUpFromLine,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Scale,
   Wallet,
 } from 'lucide-react'
@@ -219,16 +222,45 @@ export default function Dashboard() {
         title={greeting}
         description="Here’s a clear look at your money this month."
         action={
-          <label className="flex items-center gap-2 text-sm font-medium text-muted">
-            <span>Period</span>
-            <input
-              type="month"
-              aria-label="Dashboard report month"
-              value={month}
-              onChange={(event) => event.target.value && setMonth(event.target.value)}
-              className="min-h-10 rounded-lg border border-line bg-white px-2 text-sm text-ink outline-none focus:border-brand focus:ring-2 focus:ring-brand/15"
-            />
-          </label>
+          <div
+            role="group"
+            aria-label="Dashboard reporting period"
+            className="flex w-full items-center gap-2 sm:w-auto"
+          >
+            <span className="shrink-0 text-sm font-medium text-muted">Period</span>
+            <div className="flex min-w-0 flex-1 items-center rounded-xl border border-line bg-white p-1 sm:flex-none">
+              <button
+                type="button"
+                onClick={() => setMonth((current) => shiftMonth(current, -1))}
+                aria-label="Previous month"
+                className="grid size-10 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <ChevronLeft aria-hidden="true" size={19} />
+              </button>
+              <label className="relative min-w-0 flex-1 sm:w-40 sm:flex-none">
+                <CalendarDays
+                  aria-hidden="true"
+                  size={17}
+                  className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-brand"
+                />
+                <input
+                  type="month"
+                  aria-label="Choose dashboard month"
+                  value={month}
+                  onChange={(event) => event.target.value && setMonth(event.target.value)}
+                  className="min-h-10 w-full min-w-0 cursor-pointer appearance-none rounded-lg bg-transparent pl-8 pr-1 text-center text-sm font-semibold text-ink outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => setMonth((current) => shiftMonth(current, 1))}
+                aria-label="Next month"
+                className="grid size-10 shrink-0 place-items-center rounded-lg text-muted transition hover:bg-canvas hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+              >
+                <ChevronRight aria-hidden="true" size={19} />
+              </button>
+            </div>
+          </div>
         }
       />
 
@@ -243,7 +275,7 @@ export default function Dashboard() {
         <section
           data-tour="dashboard-overview"
           aria-label={`Financial summary for ${monthLabel(month)}`}
-          className="order-2 grid grid-cols-2 gap-3 xl:order-1 xl:col-span-2 lg:grid-cols-3 2xl:grid-cols-5 lg:gap-4"
+          className="order-1 grid grid-cols-2 gap-3 xl:order-1 xl:col-span-2 lg:grid-cols-3 2xl:grid-cols-5 lg:gap-4"
         >
           {summaryCards.map((card) => {
             const compact = card.label === 'Budget utilization'
@@ -258,7 +290,7 @@ export default function Dashboard() {
           })}
         </section>
 
-        <div className="order-1 min-w-0 xl:order-2 xl:col-start-1 xl:row-start-2">
+        <div className="order-2 min-w-0 xl:order-2 xl:col-start-1 xl:row-start-2">
           <MonthlyOverviewChart data={trend} loading={loading} />
         </div>
 
