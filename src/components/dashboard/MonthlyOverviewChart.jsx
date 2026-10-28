@@ -28,15 +28,15 @@ function ChartTooltip({ active, payload, label }) {
 
 export default function MonthlyOverviewChart({ data = [], loading = false }) {
   return (
-    <section aria-labelledby="monthly-overview-title" className="rounded-xl border border-line bg-white p-5 sm:p-6">
-      <div className="mb-5">
+    <section aria-labelledby="monthly-overview-title" className="min-w-0 rounded-xl border border-line bg-white p-4 sm:p-6">
+      <div className="mb-3 sm:mb-5">
         <h2 id="monthly-overview-title" className="text-base font-semibold text-ink">
           Income vs. expenses
         </h2>
         <p className="mt-1 text-xs text-muted">Income and expenses · Philippine pesos</p>
       </div>
       {loading ? (
-        <div className="grid h-[250px] place-items-center text-sm text-muted" role="status">Loading report…</div>
+        <div className="grid h-[220px] place-items-center text-sm text-muted sm:h-[290px]" role="status">Loading report…</div>
       ) : data.length === 0 ? (
         <EmptyState
           title="No activity in this period"
@@ -44,7 +44,7 @@ export default function MonthlyOverviewChart({ data = [], loading = false }) {
         />
       ) : (
         <div
-          className="h-[250px] w-full sm:h-[290px]"
+          className="h-[220px] w-full sm:h-[290px]"
           role="img"
           aria-label="Bar chart comparing monthly income and expenses"
         >

@@ -239,20 +239,34 @@ export default function Dashboard() {
         </div>
       )}
 
-      <section data-tour="dashboard-overview" aria-label={`Financial summary for ${monthLabel(month)}`} className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-3 2xl:grid-cols-5 lg:gap-4">
-        {summaryCards.map((card) => (
-          <div key={card.label} className={loading ? 'animate-pulse opacity-60' : ''}>
-            <SummaryCard {...card} />
-          </div>
-        ))}
-      </section>
-
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,1fr)]">
-        <div className="space-y-5">
+        <section
+          data-tour="dashboard-overview"
+          aria-label={`Financial summary for ${monthLabel(month)}`}
+          className="order-2 grid grid-cols-2 gap-3 xl:order-1 xl:col-span-2 lg:grid-cols-3 2xl:grid-cols-5 lg:gap-4"
+        >
+          {summaryCards.map((card) => {
+            const compact = card.label === 'Budget utilization'
+            return (
+              <div
+                key={card.label}
+                className={`${loading ? 'animate-pulse opacity-60' : ''} ${compact ? 'col-span-2 lg:col-span-1' : ''}`}
+              >
+                <SummaryCard {...card} compact={compact} />
+              </div>
+            )
+          })}
+        </section>
+
+        <div className="order-1 min-w-0 xl:order-2 xl:col-start-1 xl:row-start-2">
           <MonthlyOverviewChart data={trend} loading={loading} />
+        </div>
+
+        <div className="order-3 min-w-0 xl:col-start-1 xl:row-start-3">
           <TransactionList transactions={recentTransactions} loading={loading} />
         </div>
-        <div className="space-y-5">
+
+        <div className="order-4 min-w-0 space-y-5 xl:col-start-2 xl:row-start-2 xl:row-span-2">
           <BudgetOverview budgets={budgets} spending={spending} loading={loading} month={month} />
           <section aria-labelledby="dashboard-category-spending" className="rounded-xl border border-line bg-white p-5 sm:p-6">
             <div className="mb-4 flex items-start justify-between gap-3">

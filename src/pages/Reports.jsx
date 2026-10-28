@@ -188,17 +188,17 @@ export default function Reports() {
       </section>
 
       <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,1fr)]">
-        <section aria-labelledby="report-trend-title" className="rounded-xl border border-line bg-white p-5 sm:p-6">
-          <div className="mb-5">
+        <section aria-labelledby="report-trend-title" className="min-w-0 rounded-xl border border-line bg-white p-4 sm:p-6">
+          <div className="mb-3 sm:mb-5">
             <h2 id="report-trend-title" className="text-base font-semibold text-ink">Income and expenses over time</h2>
             <p className="mt-1 text-xs text-muted">Six months ending {monthLabel(month)} · PHP</p>
           </div>
           {loading ? (
-            <div className="grid h-[280px] place-items-center text-sm text-muted" role="status">Loading report…</div>
+            <div className="grid h-[240px] place-items-center text-sm text-muted sm:h-[280px]" role="status">Loading report…</div>
           ) : !hasActivity ? (
             <EmptyState title="No activity in this period" description="Monthly totals will appear after you record income or expenses." />
           ) : (
-            <div className="h-[280px] w-full" role="img" aria-label="Bar chart showing monthly income and expenses">
+            <div className="h-[240px] w-full sm:h-[280px]" role="img" aria-label="Bar chart showing monthly income and expenses">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={trend} margin={{ top: 8, right: 4, left: -18, bottom: 0 }} barGap={4}>
                   <CartesianGrid vertical={false} stroke="#edf0ed" />
@@ -224,7 +224,7 @@ export default function Reports() {
             <EmptyState title="No categorized expenses" description="Expense categories will appear here after you record spending." />
           ) : (
             <div className="space-y-4">
-              <div className="h-[220px] w-full" role="img" aria-label="Bar chart showing expenses by category">
+              <div className="h-[200px] w-full sm:h-[220px]" role="img" aria-label="Bar chart showing expenses by category">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={categoryData.slice(0, 8).map((item) => ({ ...item, expenseCentavos: Number(item.spent) }))} layout="vertical" margin={{ top: 2, right: 10, left: 3, bottom: 2 }}>
                     <CartesianGrid horizontal={false} stroke="#edf0ed" />
