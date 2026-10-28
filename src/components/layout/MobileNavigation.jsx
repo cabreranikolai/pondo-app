@@ -5,19 +5,21 @@ export default function MobileNavigation() {
   return (
     <nav
       aria-label="Main navigation"
-      className="safe-bottom fixed inset-x-0 bottom-0 z-30 border-t border-line bg-white/95 px-1 pt-2 backdrop-blur lg:hidden"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex justify-center px-3 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] lg:hidden"
     >
-      <ul className="mx-auto flex max-w-lg items-stretch justify-around">
+      <ul className="pointer-events-auto grid w-full max-w-[430px] grid-cols-5 gap-1 rounded-full border border-white/70 bg-white/85 p-1.5 shadow-[0_8px_30px_rgb(32_41_35_/_0.14)] backdrop-blur-xl backdrop-saturate-150 dark:border-white/10 dark:bg-[#202923]/85 dark:shadow-black/25">
         {primaryNavigation.map((item) => {
           const Icon = item.icon
           return (
-            <li key={item.to} className="flex-1">
+            <li key={item.to} className="min-w-0">
               <NavLink
                 to={item.to}
                 end={item.to === '/'}
                 className={({ isActive }) =>
-                  `flex min-h-12 flex-col items-center justify-center gap-1 rounded-lg px-0.5 text-[10px] font-medium leading-tight ${
-                    isActive ? 'text-brand-dark' : 'text-muted'
+                  `flex min-h-12 flex-col items-center justify-center gap-1 rounded-full px-1 text-[10px] font-medium leading-tight transition-[background-color,color,transform] duration-200 ease-out active:scale-[0.96] motion-reduce:transition-none ${
+                    isActive
+                      ? 'bg-brand-soft text-brand-dark dark:bg-white/10 dark:text-[#b9dfca]'
+                      : 'text-muted dark:text-white/70'
                   }`
                 }
               >
