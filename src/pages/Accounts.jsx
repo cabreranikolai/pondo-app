@@ -104,7 +104,7 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:items-center sm:p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !busy) onCancel()
       }}
@@ -113,9 +113,9 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="account-form-title"
-        className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:max-w-lg sm:rounded-2xl sm:p-7"
+        className="max-h-[88dvh] w-full overflow-y-auto overscroll-contain rounded-2xl bg-white p-4 shadow-xl sm:max-h-[92vh] sm:max-w-lg sm:p-7"
       >
-        <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="mb-3 flex items-start justify-between gap-3 sm:mb-5 sm:gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">
               Your money
@@ -140,7 +140,7 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
             <label htmlFor="account-name" className="mb-1.5 block text-sm font-medium text-ink">
               Account name
@@ -207,19 +207,19 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
             </p>
           )}
 
-          <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+          <div className="flex gap-2 pt-1 sm:justify-end">
             <button
               type="button"
               onClick={onCancel}
               disabled={busy}
-              className="min-h-11 rounded-lg border border-line px-4 text-sm font-medium text-muted hover:bg-canvas disabled:opacity-50"
+              className="min-h-11 flex-1 rounded-lg border border-line px-3 text-sm font-medium text-muted hover:bg-canvas disabled:opacity-50 sm:flex-none sm:px-4"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={busy}
-              className="min-h-11 rounded-lg bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
+              className="min-h-11 flex-1 rounded-lg bg-brand px-3 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60 sm:flex-none sm:px-4"
             >
               {busy ? 'Saving…' : account ? 'Save changes' : 'Add account'}
             </button>

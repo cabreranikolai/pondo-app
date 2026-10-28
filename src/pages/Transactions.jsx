@@ -171,7 +171,7 @@ function TransactionForm({ transaction, accounts, categories, busy, error, onCan
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-0 sm:items-center sm:p-4"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:items-center sm:p-4"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !busy) onCancel()
       }}
@@ -180,9 +180,9 @@ function TransactionForm({ transaction, accounts, categories, busy, error, onCan
         role="dialog"
         aria-modal="true"
         aria-labelledby="transaction-form-title"
-        className="max-h-[92vh] w-full overflow-y-auto rounded-t-2xl bg-white p-5 shadow-xl sm:max-w-xl sm:rounded-2xl sm:p-7"
+        className="flex max-h-[88dvh] w-full flex-col overflow-hidden rounded-2xl bg-white p-4 shadow-xl sm:max-h-[92vh] sm:max-w-xl sm:p-7"
       >
-        <div className="mb-5 flex items-start justify-between gap-4">
+        <div className="mb-3 flex shrink-0 items-start justify-between gap-3 sm:mb-5 sm:gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-brand">
               Your activity
@@ -205,7 +205,8 @@ function TransactionForm({ transaction, accounts, categories, busy, error, onCan
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-1 sm:space-y-4">
           <div>
             <label htmlFor="transaction-type" className="mb-1.5 block text-sm font-medium text-ink">
               Type
@@ -362,19 +363,20 @@ function TransactionForm({ transaction, accounts, categories, busy, error, onCan
             </p>
           )}
 
-          <div className="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+          </div>
+          <div className="flex shrink-0 gap-2 border-t border-line bg-white pt-3 sm:justify-end">
             <button
               type="button"
               onClick={onCancel}
               disabled={busy}
-              className="min-h-11 rounded-lg border border-line px-4 text-sm font-medium text-muted hover:bg-canvas disabled:opacity-50"
+              className="min-h-11 flex-1 rounded-lg border border-line px-3 text-sm font-medium text-muted hover:bg-canvas disabled:opacity-50 sm:flex-none sm:px-4"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={busy || accounts.filter((account) => !account.is_archived).length === 0}
-              className="min-h-11 rounded-lg bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
+              className="min-h-11 flex-1 rounded-lg bg-brand px-3 text-sm font-semibold text-white transition hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60 sm:flex-none sm:px-4"
             >
               {busy ? 'Saving…' : transaction ? 'Save changes' : 'Add transaction'}
             </button>
