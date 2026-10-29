@@ -580,3 +580,55 @@ column only, and appends the value to the security-invoker `account_balances`
 view. Existing ownership RLS policies and all other column grants remain
 unchanged. Check migration history before applying it, and do not rerun it
 blindly.
+
+## E-wallet account metadata
+
+The account form offers optional e-wallet provider suggestions for GCash, Maya,
+GrabPay, ShopeePay, Coins.ph, PalawanPay, and DiskarTech. The provider names
+are bundled in the app and can be entered manually when a provider is not
+listed. Logos use the same optional public Logo.dev key and domain-restricted
+client-side configuration described above; a neutral wallet icon is shown
+when no logo key is set or an image is unavailable.
+
+Apply
+[`migrations/20261029110000_ewallet_provider_metadata.sql`](./migrations/20261029110000_ewallet_provider_metadata.sql)
+after the preceding migrations, including the Philippine bank account metadata
+and savings goals migrations. It adds nullable
+`accounts.e_wallet_provider`, grants authenticated users access to that column
+only, and appends it to the security-invoker `account_balances` view. Existing
+account ownership policies and other column grants remain unchanged. As with
+other migrations, check the project migration history before applying it.
+
+## Savings goals
+
+Apply
+[`migrations/20261029100000_savings_goals.sql`](./migrations/20261029100000_savings_goals.sql)
+after the existing schema migrations. It creates `public.savings_goals` with
+per-user row-level security, positive target validation, and separate saved
+amount tracking. The `adjust_savings_goal` RPC adds or withdraws progress
+atomically, rejects withdrawals larger than the saved amount, and is executable
+only by authenticated users. Goal progress does not create transactions or
+change account balances.
+
+Verify RLS and RPC permissions in SQL Editor:
+
+```sql
+select relrowsecurity
+from pg_class
+where oid = 'public.savings_goals'::regclass;
+
+select has_function_privilege(
+  'authenticated',
+  'public.adjust_savings_goal(uuid,numeric,text)',
+  'EXECUTE'
+) as authenticated_can_adjust_goals,
+has_function_privilege(
+  'anon',
+  'public.adjust_savings_goal(uuid,numeric,text)',
+  'EXECUTE'
+) as anon_can_adjust_goals;
+```
+
+Expect RLS enabled, authenticated execution true, and anon execution false.
+Using two test users, verify each can only list and change their own goals,
+including that the RPC cannot adjust another user's goal.

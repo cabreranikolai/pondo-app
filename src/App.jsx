@@ -8,6 +8,7 @@ const Accounts = lazy(() => import('./pages/Accounts.jsx'))
 const Budgets = lazy(() => import('./pages/Budgets.jsx'))
 const Dashboard = lazy(() => import('./pages/Dashboard.jsx'))
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword.jsx'))
+const Goals = lazy(() => import('./pages/Goals.jsx'))
 const Login = lazy(() => import('./pages/Login.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
 const Register = lazy(() => import('./pages/Register.jsx'))
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="accounts" element={<Accounts />} />
             <Route path="transactions" element={<Transactions />} />
             <Route path="budgets" element={<Budgets />} />
+            <Route path="goals" element={<Goals />} />
             <Route path="reports" element={<Reports />} />
             <Route path="settings" element={<Settings />} />
             <Route

@@ -16,10 +16,11 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../contexts/authContext.js'
 import EmptyState from '../components/ui/EmptyState.jsx'
-import BankLogo from '../components/ui/BankLogo.jsx'
+import FinancialProviderLogo from '../components/ui/FinancialProviderLogo.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { centsToDecimal, formatCents, toCents } from '../lib/money.js'
 import { PHILIPPINE_BANKS } from '../lib/philippineBanks.js'
+import { PHILIPPINE_E_WALLETS } from '../lib/philippineEWallets.js'
 import { supabase } from '../lib/supabase.js'
 
 const ACCOUNT_TYPES = [
@@ -40,6 +41,7 @@ const EMPTY_FORM = {
   name: '',
   account_type: 'CASH',
   bank_name: '',
+  e_wallet_provider: '',
   opening_balance: '0.00',
 }
 
@@ -57,6 +59,9 @@ function accountLoadError(error) {
   if (details.includes('bank_name')) {
     return 'The bank details database update is missing. Apply 20261027100000_philippine_bank_metadata.sql in Supabase, then retry.'
   }
+  if (details.includes('e_wallet_provider')) {
+    return 'The e-wallet details database update is missing. Apply 20261029110000_ewallet_provider_metadata.sql in Supabase, then retry.'
+  }
   if (details.includes('account_balances') || details.includes('current_balance')) {
     return 'The account balance view is missing. Apply 20261026110000_accounts_archive_and_other_type.sql, then 20261026130000_transaction_history_and_atomic_writes.sql in Supabase, then retry.'
   }
@@ -67,19 +72,21 @@ function accountTypeLabel(type) {
   return ACCOUNT_TYPES.find((item) => item.value === type)?.label || 'Other'
 }
 
-function BankNameCombobox({ value, onChange }) {
+function ProviderCombobox({ value, onChange, providers, providerType, inputId, label }) {
   const [isOpen, setIsOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState(-1)
-  const matchingBanks = useMemo(() => {
+  const listId = `${inputId}-options`
+  const optionIdPrefix = `${inputId}-option`
+  const matchingProviders = useMemo(() => {
     const query = value.trim().toLocaleLowerCase()
-    if (!query) return PHILIPPINE_BANKS
-    return PHILIPPINE_BANKS.filter((bank) =>
-      bank.toLocaleLowerCase().includes(query),
+    if (!query) return providers
+    return providers.filter((provider) =>
+      provider.toLocaleLowerCase().includes(query),
     )
-  }, [value])
+  }, [providers, value])
 
-  function chooseBank(bank) {
-    onChange(bank)
+  function chooseProvider(provider) {
+    onChange(provider)
     setIsOpen(false)
     setActiveIndex(0)
   }
@@ -89,25 +96,25 @@ function BankNameCombobox({ value, onChange }) {
       event.preventDefault()
       setIsOpen(true)
       setActiveIndex((index) =>
-        matchingBanks.length
+        matchingProviders.length
           ? index < 0
             ? 0
-            : (index + 1) % matchingBanks.length
+            : (index + 1) % matchingProviders.length
           : -1,
       )
     } else if (event.key === 'ArrowUp') {
       event.preventDefault()
       setIsOpen(true)
       setActiveIndex((index) =>
-        matchingBanks.length
+        matchingProviders.length
           ? index < 0 || index === 0
-            ? matchingBanks.length - 1
+            ? matchingProviders.length - 1
             : index - 1
           : -1,
       )
-    } else if (event.key === 'Enter' && isOpen && matchingBanks[activeIndex]) {
+    } else if (event.key === 'Enter' && isOpen && matchingProviders[activeIndex]) {
       event.preventDefault()
-      chooseBank(matchingBanks[activeIndex])
+      chooseProvider(matchingProviders[activeIndex])
     } else if (event.key === 'Escape' && isOpen) {
       event.preventDefault()
       setIsOpen(false)
@@ -124,14 +131,14 @@ function BankNameCombobox({ value, onChange }) {
       <div className="flex min-h-11 items-center rounded-lg border border-line bg-white focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/15">
         <Search aria-hidden="true" size={17} className="ml-3 shrink-0 text-muted" />
         <input
-          id="account-bank-name"
+          id={inputId}
           role="combobox"
           aria-autocomplete="list"
           aria-expanded={isOpen}
-          aria-controls="philippine-bank-options"
+          aria-controls={listId}
           aria-activedescendant={
-            isOpen && matchingBanks[activeIndex]
-              ? `philippine-bank-option-${activeIndex}`
+            isOpen && matchingProviders[activeIndex]
+              ? `${optionIdPrefix}-${activeIndex}`
               : undefined
           }
           autoComplete="off"
@@ -144,12 +151,16 @@ function BankNameCombobox({ value, onChange }) {
             setIsOpen(true)
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Search or enter a bank name"
+          placeholder={`Search or enter a ${label.toLowerCase()}`}
           className="min-w-0 flex-1 bg-transparent px-2 text-sm text-ink outline-none placeholder:text-muted"
         />
         <button
           type="button"
-          aria-label={isOpen ? 'Close bank suggestions' : 'Show bank suggestions'}
+          aria-label={
+            isOpen
+              ? `Close ${label.toLowerCase()} suggestions`
+              : `Show ${label.toLowerCase()} suggestions`
+          }
           aria-expanded={isOpen}
           onClick={() => {
             setIsOpen((open) => !open)
@@ -168,33 +179,37 @@ function BankNameCombobox({ value, onChange }) {
       {isOpen && (
         <div className="absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-xl border border-line bg-white shadow-lg">
           <p className="border-b border-line px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted">
-            Banks in the BSP directory
+            {label}
           </p>
           <ul
-            id="philippine-bank-options"
+            id={listId}
             role="listbox"
-            aria-label="Philippine bank suggestions"
+            aria-label={`${label} suggestions`}
             className="max-h-52 overflow-y-auto overscroll-contain p-1"
           >
-            {matchingBanks.length ? (
-              matchingBanks.map((bank, index) => (
-                <li key={bank} role="presentation">
+            {matchingProviders.length ? (
+              matchingProviders.map((provider, index) => (
+                <li key={provider} role="presentation">
                   <div
-                    id={`philippine-bank-option-${index}`}
+                    id={`${optionIdPrefix}-${index}`}
                     role="option"
-                    aria-selected={value === bank}
+                    aria-selected={value === provider}
                     onMouseDown={(event) => event.preventDefault()}
                     onMouseEnter={() => setActiveIndex(index)}
-                    onClick={() => chooseBank(bank)}
+                    onClick={() => chooseProvider(provider)}
                     className={`flex min-h-10 w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 text-left text-sm transition-colors ${
                       activeIndex === index
                         ? 'bg-brand-soft text-brand'
                         : 'text-ink hover:bg-canvas'
                     }`}
                   >
-                    <BankLogo bankName={bank} className="size-8" />
-                    <span className="min-w-0 flex-1">{bank}</span>
-                    {value === bank && (
+                    <FinancialProviderLogo
+                      providerName={provider}
+                      providerType={providerType}
+                      className="size-8"
+                    />
+                    <span className="min-w-0 flex-1">{provider}</span>
+                    {value === provider && (
                       <Check aria-hidden="true" size={16} className="shrink-0 text-brand" />
                     )}
                   </div>
@@ -202,12 +217,12 @@ function BankNameCombobox({ value, onChange }) {
               ))
             ) : (
               <li className="px-3 py-3 text-sm text-muted">
-                No matching bank. Your entry will be saved as typed.
+                No matching provider. Your entry will be saved as typed.
               </li>
             )}
           </ul>
           <p className="border-t border-line px-3 py-2 text-xs text-muted">
-            You can also enter a bank not listed here.
+            You can also enter a provider not listed here.
           </p>
         </div>
       )}
@@ -222,6 +237,7 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
           name: account.name,
           account_type: account.account_type,
           bank_name: account.bank_name || '',
+          e_wallet_provider: account.e_wallet_provider || '',
           opening_balance: String(account.opening_balance ?? '0.00'),
         }
       : EMPTY_FORM,
@@ -233,6 +249,9 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
       ...current,
       [field]: value,
       ...(field === 'account_type' && value !== 'BANK' ? { bank_name: '' } : {}),
+      ...(field === 'account_type' && value !== 'E_WALLET'
+        ? { e_wallet_provider: '' }
+        : {}),
     }))
     setValidationError('')
   }
@@ -254,6 +273,11 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
       setValidationError('Bank name must be 120 characters or fewer.')
       return
     }
+    const eWalletProvider = form.e_wallet_provider.trim()
+    if (form.account_type === 'E_WALLET' && eWalletProvider.length > 120) {
+      setValidationError('E-wallet provider name must be 120 characters or fewer.')
+      return
+    }
 
     const openingBalanceCents = toCents(form.opening_balance)
     if (openingBalanceCents === null) {
@@ -267,6 +291,8 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
       name,
       account_type: form.account_type,
       bank_name: form.account_type === 'BANK' ? bankName || null : null,
+      e_wallet_provider:
+        form.account_type === 'E_WALLET' ? eWalletProvider || null : null,
       opening_balance: centsToDecimal(openingBalanceCents),
     })
   }
@@ -353,13 +379,39 @@ function AccountForm({ account, busy, error, onCancel, onSubmit }) {
               >
                 Bank name <span className="font-normal text-muted">(optional)</span>
               </label>
-              <BankNameCombobox
+              <ProviderCombobox
                 value={form.bank_name}
                 onChange={(value) => updateField('bank_name', value)}
+                providers={PHILIPPINE_BANKS}
+                providerType="BANK"
+                inputId="account-bank-name"
+                label="Banks in the BSP directory"
               />
               <p className="mt-1.5 text-xs leading-5 text-muted">
                 Suggestions include BSP-listed universal, commercial, and digital banks. You can
                 also enter another bank.
+              </p>
+            </div>
+          )}
+
+          {form.account_type === 'E_WALLET' && (
+            <div>
+              <label
+                htmlFor="account-e-wallet-provider"
+                className="mb-1.5 block text-sm font-medium text-ink"
+              >
+                E-wallet provider <span className="font-normal text-muted">(optional)</span>
+              </label>
+              <ProviderCombobox
+                value={form.e_wallet_provider}
+                onChange={(value) => updateField('e_wallet_provider', value)}
+                providers={PHILIPPINE_E_WALLETS}
+                providerType="E_WALLET"
+                inputId="account-e-wallet-provider"
+                label="Popular Philippine e-wallets"
+              />
+              <p className="mt-1.5 text-xs leading-5 text-muted">
+                Choose a provider for its logo, or enter another e-wallet name.
               </p>
             </div>
           )}
@@ -441,7 +493,7 @@ export default function Accounts() {
 
     const { data, error } = await supabase
       .from('account_balances')
-      .select('id, name, account_type, opening_balance, current_balance, currency, is_archived, created_at, bank_name')
+      .select('id, name, account_type, opening_balance, current_balance, currency, is_archived, created_at, bank_name, e_wallet_provider')
       .eq('user_id', userId)
       .order('created_at', { ascending: true })
 
@@ -699,13 +751,18 @@ export default function Accounts() {
               <li key={account.id}>
                 <article className="h-full rounded-xl border border-line bg-white p-4 sm:p-5">
                   <div className="flex items-start gap-3">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
-                      {account.account_type === 'BANK' && account.bank_name ? (
-                        <BankLogo bankName={account.bank_name} className="size-11 rounded-xl" />
-                      ) : (
+                    {((account.account_type === 'BANK' && account.bank_name) ||
+                      (account.account_type === 'E_WALLET' && account.e_wallet_provider)) ? (
+                      <FinancialProviderLogo
+                        providerName={account.bank_name || account.e_wallet_provider}
+                        providerType={account.account_type}
+                        className="size-11 rounded-xl"
+                      />
+                    ) : (
+                      <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand">
                         <Icon aria-hidden="true" size={21} strokeWidth={1.8} />
-                      )}
-                    </span>
+                      </span>
+                    )}
                     <div className="min-w-0 flex-1">
                       <h2 className="truncate text-sm font-semibold text-ink">{account.name}</h2>
                       <p className="mt-1 text-xs text-muted">
@@ -714,6 +771,11 @@ export default function Accounts() {
                       </p>
                       {account.bank_name && (
                         <p className="mt-1 truncate text-xs text-muted">{account.bank_name}</p>
+                      )}
+                      {account.e_wallet_provider && (
+                        <p className="mt-1 truncate text-xs text-muted">
+                          {account.e_wallet_provider}
+                        </p>
                       )}
                     </div>
                     <p className="shrink-0 text-right text-xs font-semibold text-ink">

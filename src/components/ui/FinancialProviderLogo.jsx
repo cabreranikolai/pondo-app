@@ -1,12 +1,21 @@
 import { useState } from 'react'
-import { Building2 } from 'lucide-react'
+import { Building2, Smartphone } from 'lucide-react'
 import { PHILIPPINE_BANK_DOMAINS } from '../../lib/bankDomains.js'
+import { PHILIPPINE_E_WALLET_DOMAINS } from '../../lib/philippineEWallets.js'
 
 const LOGO_DEV_KEY = import.meta.env.VITE_LOGO_DEV_KEY
 
-export default function BankLogo({ bankName, className = 'size-8' }) {
+export default function FinancialProviderLogo({
+  providerName,
+  providerType,
+  className = 'size-8',
+}) {
   const [failedDomain, setFailedDomain] = useState(null)
-  const domain = PHILIPPINE_BANK_DOMAINS[bankName]
+  const domainMap = providerType === 'E_WALLET'
+    ? PHILIPPINE_E_WALLET_DOMAINS
+    : PHILIPPINE_BANK_DOMAINS
+  const domain = domainMap[providerName]
+  const FallbackIcon = providerType === 'E_WALLET' ? Smartphone : Building2
 
   if (!domain || !LOGO_DEV_KEY || failedDomain === domain) {
     return (
@@ -14,7 +23,7 @@ export default function BankLogo({ bankName, className = 'size-8' }) {
         aria-hidden="true"
         className={`grid ${className} shrink-0 place-items-center rounded-lg bg-brand-soft text-brand`}
       >
-        <Building2 size={17} strokeWidth={1.8} />
+        <FallbackIcon size={17} strokeWidth={1.8} />
       </span>
     )
   }

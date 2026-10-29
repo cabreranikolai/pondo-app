@@ -1,6 +1,7 @@
 import {
   BarChart3,
   CreditCard,
+  Goal,
   LayoutDashboard,
   Settings2,
   Tags,
@@ -17,6 +18,7 @@ export const primaryNavigation = [
 ]
 
 export const secondaryNavigation = [
+  { label: 'Savings goals', to: '/goals', icon: Goal },
   { label: 'Settings', to: '/settings', icon: Settings2 },
   { label: 'User management', to: '/admin/users', icon: UsersRound, role: 'SUPERADMIN' },
 ]

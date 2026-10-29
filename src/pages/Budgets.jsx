@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, CircleAlert, Pencil, Plus, Tags, Trash2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CircleAlert, Goal, Pencil, Plus, Tags, Trash2, X } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { useAuth } from '../contexts/authContext.js'
@@ -394,17 +395,26 @@ export default function Budgets() {
         eyebrow="Plan ahead"
         title="Budgets"
         action={
-          <button
-            type="button"
-            onClick={() => {
-              setFormError('')
-              setDialogBudget(false)
-            }}
-            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand-dark"
-          >
-            <Plus aria-hidden="true" size={17} />
-            Add budget
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/goals"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-line bg-white px-3 text-sm font-semibold text-brand transition hover:bg-brand-soft sm:px-4"
+            >
+              <Goal aria-hidden="true" size={17} />
+              Savings goals
+            </Link>
+            <button
+              type="button"
+              onClick={() => {
+                setFormError('')
+                setDialogBudget(false)
+              }}
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-brand px-4 text-sm font-semibold text-white transition hover:bg-brand-dark"
+            >
+              <Plus aria-hidden="true" size={17} />
+              Add budget
+            </button>
+          </div>
         }
       />
 
