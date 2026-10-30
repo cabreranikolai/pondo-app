@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import AuthFeedback from '../components/auth/AuthFeedback.jsx'
 import AuthField from '../components/auth/AuthField.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { useAuth } from '../contexts/authContext.js'
 import { supabase } from '../lib/supabase.js'
@@ -24,6 +25,7 @@ export default function UserManagement() {
   const [inviteSuccess, setInviteSuccess] = useState('')
   const [actionError, setActionError] = useState('')
   const [busyId, setBusyId] = useState('')
+  const [pendingRoleChange, setPendingRoleChange] = useState(null)
 
   const loadManagementData = useCallback(async () => {
     const profileResult = await supabase
@@ -92,8 +94,6 @@ export default function UserManagement() {
 
   async function changeRole(profile, nextRole) {
     if (busyId || profile.id === currentUser?.id || profile.role === nextRole) return
-    const action = nextRole === 'SUPERADMIN' ? 'promote to superadmin' : 'change to end user'
-    if (!window.confirm(`Are you sure you want to ${action} this user?`)) return
 
     setBusyId(profile.id)
     setActionError('')
@@ -213,7 +213,7 @@ export default function UserManagement() {
                       aria-label={`Change role for ${profile.display_name || 'user'}`}
                       value={profile.role}
                       disabled={busyId === profile.id}
-                      onChange={(event) => changeRole(profile, event.target.value)}
+                      onChange={(event) => setPendingRoleChange({ profile, role: event.target.value })}
                       className="min-h-10 rounded-lg border border-line bg-white px-2 text-xs text-ink disabled:opacity-60"
                     >
                       <option value="END_USER">END_USER</option>
@@ -227,6 +227,24 @@ export default function UserManagement() {
         )}
       </section>
 
+      {pendingRoleChange && (
+        <ConfirmDialog
+          title={pendingRoleChange.role === 'SUPERADMIN' ? 'Promote this user?' : 'Remove administrator access?'}
+          description={
+            pendingRoleChange.role === 'SUPERADMIN'
+              ? `Promote ${pendingRoleChange.profile.display_name || 'this user'} to superadmin? They will have full administrative access.`
+              : `Change ${pendingRoleChange.profile.display_name || 'this user'} to end user? They will lose administrator access.`
+          }
+          confirmLabel={pendingRoleChange.role === 'SUPERADMIN' ? 'Promote to superadmin' : 'Change to end user'}
+          destructive={pendingRoleChange.role !== 'SUPERADMIN'}
+          busy={busyId === pendingRoleChange.profile.id}
+          onCancel={() => setPendingRoleChange(null)}
+          onConfirm={() => {
+            const { profile, role } = pendingRoleChange
+            void changeRole(profile, role)
+          }}
+        />
+      )}
     </>
   )
 }

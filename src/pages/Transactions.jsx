@@ -11,6 +11,7 @@ import {
   X,
 } from 'lucide-react'
 import EmptyState from '../components/ui/EmptyState.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { useAuth } from '../contexts/authContext.js'
 import { centsToDecimal, formatCents, toCents } from '../lib/money.js'
@@ -467,6 +468,7 @@ export default function Transactions() {
   const [editingTransaction, setEditingTransaction] = useState(null)
   const [formError, setFormError] = useState('')
   const [saving, setSaving] = useState(false)
+  const [pendingDeleteTransaction, setPendingDeleteTransaction] = useState(null)
   const requestSequence = useRef(0)
 
   const loadOptions = useCallback(async () => {
@@ -664,10 +666,6 @@ export default function Transactions() {
 
   async function deleteTransaction(transaction) {
     const label = transaction.type === 'TRANSFER' ? 'transfer' : 'transaction'
-    if (!window.confirm(`Delete this ${label}? This will update the affected account balance${transaction.type === 'TRANSFER' ? 's together' : ''}.`)) {
-      return
-    }
-
     setSaving(true)
     setTransactionsError('')
     setSuccess('')
@@ -867,7 +865,7 @@ export default function Transactions() {
                   setFormError('')
                   setEditingTransaction(item)
                 }}
-                onDelete={deleteTransaction}
+                onDelete={setPendingDeleteTransaction}
               />
             ))}
           </ul>
@@ -906,6 +904,21 @@ export default function Transactions() {
           error={formError}
           onCancel={() => setEditingTransaction(null)}
           onSubmit={saveTransaction}
+        />
+      )}
+      {pendingDeleteTransaction && (
+        <ConfirmDialog
+          title={`Delete this ${pendingDeleteTransaction.type === 'TRANSFER' ? 'transfer' : 'transaction'}?`}
+          description={`This will update the affected account balance${
+            pendingDeleteTransaction.type === 'TRANSFER' ? 's together' : ''
+          }.`}
+          confirmLabel="Delete"
+          busy={saving}
+          onCancel={() => setPendingDeleteTransaction(null)}
+          onConfirm={() => {
+            const transaction = pendingDeleteTransaction
+            if (transaction) void deleteTransaction(transaction)
+          }}
         />
       )}
     </>

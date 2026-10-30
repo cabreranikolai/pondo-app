@@ -17,6 +17,7 @@ import {
 import { useAuth } from '../contexts/authContext.js'
 import EmptyState from '../components/ui/EmptyState.jsx'
 import FinancialProviderLogo from '../components/ui/FinancialProviderLogo.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { centsToDecimal, formatCents, toCents } from '../lib/money.js'
 import { PHILIPPINE_BANKS } from '../lib/philippineBanks.js'
@@ -483,6 +484,7 @@ export default function Accounts() {
   const [formError, setFormError] = useState('')
   const [saving, setSaving] = useState(false)
   const [actionAccountId, setActionAccountId] = useState('')
+  const [pendingArchiveAccount, setPendingArchiveAccount] = useState(null)
 
   const loadAccounts = useCallback(async () => {
     if (!userId) {
@@ -577,11 +579,6 @@ export default function Accounts() {
   async function toggleArchived(account) {
     if (!userId || actionAccountId) return
     const nextArchived = !account.is_archived
-    const confirmation = nextArchived
-      ? `Archive “${account.name}”? Its history will be kept, and it cannot receive future transactions.`
-      : `Restore “${account.name}” to your active accounts?`
-
-    if (!window.confirm(confirmation)) return
     setActionAccountId(account.id)
     setPageError('')
     setSuccess('')
@@ -804,7 +801,7 @@ export default function Accounts() {
                     </button>
                     <button
                       type="button"
-                      onClick={() => toggleArchived(account)}
+                      onClick={() => setPendingArchiveAccount(account)}
                       disabled={Boolean(actionAccountId)}
                       className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-line px-3 text-xs font-semibold text-muted hover:bg-canvas hover:text-ink disabled:opacity-50"
                     >
@@ -836,6 +833,23 @@ export default function Accounts() {
             if (!saving) setEditingAccount(null)
           }}
           onSubmit={saveAccount}
+        />
+      )}
+      {pendingArchiveAccount && (
+        <ConfirmDialog
+          title={pendingArchiveAccount.is_archived ? 'Restore this account?' : 'Archive this account?'}
+          description={
+            pendingArchiveAccount.is_archived
+              ? `Restore “${pendingArchiveAccount.name}” to your active accounts?`
+              : `Archive “${pendingArchiveAccount.name}”? Its history will be kept, and it cannot receive future transactions.`
+          }
+          confirmLabel={pendingArchiveAccount.is_archived ? 'Restore account' : 'Archive account'}
+          destructive={!pendingArchiveAccount.is_archived}
+          onCancel={() => setPendingArchiveAccount(null)}
+          onConfirm={() => {
+            const account = pendingArchiveAccount
+            if (account) void toggleArchived(account)
+          }}
         />
       )}
     </>

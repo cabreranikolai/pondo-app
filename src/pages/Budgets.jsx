@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight, CircleAlert, Goal, Pencil, Plus, Tags, Trash2, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import EmptyState from '../components/ui/EmptyState.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { useAuth } from '../contexts/authContext.js'
 import {
@@ -249,6 +250,7 @@ export default function Budgets() {
   const [pageError, setPageError] = useState('')
   const [success, setSuccess] = useState('')
   const [dialogBudget, setDialogBudget] = useState(null)
+  const [pendingDeleteBudget, setPendingDeleteBudget] = useState(null)
   const [formError, setFormError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -365,9 +367,6 @@ export default function Budgets() {
   }
 
   async function deleteBudget(budget) {
-    const title = budget.category_id ? budget.category_name || 'this category budget' : 'this overall budget'
-    if (!window.confirm(`Delete ${title} for ${monthLabel(budget.month.slice(0, 7))}?`)) return
-
     setSaving(true)
     setPageError('')
     setSuccess('')
@@ -490,7 +489,7 @@ export default function Budgets() {
                   setFormError('')
                   setDialogBudget(budget)
                 }}
-                onDelete={deleteBudget}
+                onDelete={setPendingDeleteBudget}
               />
             </section>
           )}
@@ -511,7 +510,7 @@ export default function Budgets() {
                         setFormError('')
                         setDialogBudget(item)
                       }}
-                      onDelete={deleteBudget}
+                      onDelete={setPendingDeleteBudget}
                     />
                   </li>
                 ))}
@@ -530,6 +529,23 @@ export default function Budgets() {
           monthKey={month}
           onCancel={() => setDialogBudget(null)}
           onSubmit={saveBudget}
+        />
+      )}
+      {pendingDeleteBudget && (
+        <ConfirmDialog
+          title="Delete this budget?"
+          description={`Delete ${
+            pendingDeleteBudget.category_id
+              ? pendingDeleteBudget.category_name || 'this category budget'
+              : 'this overall budget'
+          } for ${monthLabel(pendingDeleteBudget.month.slice(0, 7))}?`}
+          confirmLabel="Delete budget"
+          busy={saving}
+          onCancel={() => setPendingDeleteBudget(null)}
+          onConfirm={() => {
+            const budget = pendingDeleteBudget
+            if (budget) void deleteBudget(budget)
+          }}
         />
       )}
     </>

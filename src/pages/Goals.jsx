@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { CalendarDays, CircleAlert, Goal, Minus, Pencil, Plus, Target, Trash2, X } from 'lucide-react'
 import EmptyState from '../components/ui/EmptyState.jsx'
+import ConfirmDialog from '../components/ui/ConfirmDialog.jsx'
 import PageHeader from '../components/ui/PageHeader.jsx'
 import { useAuth } from '../contexts/authContext.js'
 import { centsToDecimal, formatCents, toCents } from '../lib/money.js'
@@ -431,6 +432,7 @@ export default function Goals() {
   const [formError, setFormError] = useState('')
   const [success, setSuccess] = useState('')
   const [dialogGoal, setDialogGoal] = useState(null)
+  const [pendingDeleteGoal, setPendingDeleteGoal] = useState(null)
   const [progressGoal, setProgressGoal] = useState(null)
 
   const loadGoals = useCallback(async () => {
@@ -546,7 +548,6 @@ export default function Goals() {
 
   async function deleteGoal(goal) {
     if (!userId || busy) return
-    if (!window.confirm(`Delete “${goal.name}” and its saved progress? This cannot be undone.`)) return
 
     setBusy(true)
     setPageError('')
@@ -658,7 +659,7 @@ export default function Goals() {
                   setFormError('')
                   setDialogGoal(item)
                 }}
-                onDelete={deleteGoal}
+                onDelete={setPendingDeleteGoal}
                 onProgress={(item) => {
                   setFormError('')
                   setProgressGoal(item)
@@ -690,6 +691,19 @@ export default function Goals() {
             if (!busy) setProgressGoal(null)
           }}
           onSubmit={updateProgress}
+        />
+      )}
+      {pendingDeleteGoal && (
+        <ConfirmDialog
+          title="Delete this savings goal?"
+          description={`Delete “${pendingDeleteGoal.name}” and its saved progress? This cannot be undone.`}
+          confirmLabel="Delete goal"
+          busy={busy}
+          onCancel={() => setPendingDeleteGoal(null)}
+          onConfirm={() => {
+            const goal = pendingDeleteGoal
+            if (goal) void deleteGoal(goal)
+          }}
         />
       )}
     </>
